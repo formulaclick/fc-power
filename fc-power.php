@@ -2,7 +2,7 @@
 /**
  * Plugin Name: FC Power
  * Description: Plugin con funciones y seteos personalizados
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Formula Click
  * Author URI: http://www.formulaclick.com
  * License: GPL2
@@ -26,14 +26,15 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Build settings
  */
+ 
+require_once( plugin_dir_path( __FILE__ ) . 'custom-login.php' );
+ 
 if ( is_admin() && ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) ) {
 	require_once( plugin_dir_path( __FILE__ ) . 'plugin-list.php' );
 	require_once( plugin_dir_path( __FILE__ ) . 'lib/class-fc-power.php' );
 	require_once( plugin_dir_path( __FILE__ ) . 'lib/class-tgm-plugin-activation.php' );
 	add_action( 'plugins_loaded', array( 'FCPower', 'get_instance' ) );
 }
-
-
 
 /**
  * Eliminamos la barra admin del usuario
