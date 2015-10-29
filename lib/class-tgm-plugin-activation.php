@@ -69,7 +69,7 @@ if ( ! class_exists( 'TGM_Plugin_Activation' ) ) {
      *
      * @var string
      */
-    public $menu = 'tgmpa-install-plugins';
+    public $menu = 'tgmpa-install-plugins-fc-power';
 
     /**
      * Default absolute path to folder containing pre-packaged plugin zip files.
@@ -159,7 +159,7 @@ if ( ! class_exists( 'TGM_Plugin_Activation' ) ) {
 
       $this->strings = array(
         'page_title'                     => __( 'Install Required Plugins', 'tgmpa' ),
-        'menu_title'                     => __( 'Install Plugins', 'tgmpa' ),
+        'menu_title'                     => __( 'Plugins FC', 'tgmpa' ),
         'installing'                     => __( 'Installing Plugin: %s', 'tgmpa' ),
         'oops'                           => __( 'Something went wrong.', 'tgmpa' ),
         'notice_can_install_required'    => _n_noop( 'This theme requires the following plugin: %1$s.', 'This theme requires the following plugins: %1$s.' ),
