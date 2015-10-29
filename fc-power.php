@@ -9,11 +9,6 @@
  */
 
 
-// If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
-	die;
-}
-
 // Inicializamos updater
 if( ! class_exists( 'FC_Updater' ) ){
 	include_once( plugin_dir_path( __FILE__ ) . 'updater.php' );
@@ -22,6 +17,11 @@ $updater = new FC_Updater( __FILE__ );
 $updater->set_username( 'formulaclick' );
 $updater->set_repository( 'fc-power' );
 $updater->initialize();
+
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+	die;
+}
 
 /**
  * Build settings
