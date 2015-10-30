@@ -1,6 +1,6 @@
 <?php
 /**
- * @package		FCInit
+ * @package		FCPower
  */
 
 // If uninstall is not called from WordPress, exit

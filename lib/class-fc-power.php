@@ -2,6 +2,7 @@
 /**
  * @package		FCPower
  */
+ 
 if ( ! class_exists( 'FCPower' ) ) {
     /**
      * Class FCPower
@@ -14,18 +15,6 @@ if ( ! class_exists( 'FCPower' ) ) {
          * @var     string
          */
         const VERSION = '1.0.0';
-
-        /**
-         *
-         * The variable name is used as the text domain when internationalizing strings
-         * of text. Its value should match the Text Domain file header in the main
-         * plugin file.
-         *
-         * @since    1.0.0
-         *
-         * @var      string
-         */
-        protected $plugin_slug = 'fc-power';
 
         /**
          * @var string
@@ -49,13 +38,6 @@ if ( ! class_exists( 'FCPower' ) ) {
         protected static $instance = null;
 
         /**
-         * Initialize the plugin by setting localization and loading public scripts
-         * and styles.
-         */
-
-        protected $plugin_screen_hook_suffix = null;
-
-        /**
          *
          */
         function __construct() {
@@ -64,29 +46,15 @@ if ( ! class_exists( 'FCPower' ) ) {
             add_action( 'wpmu_new_blog', array( $this, 'activate_new_site' ) );
 
             // Main functions
-            add_action( 'tgmpa_register', array( $this, 'fc_power_register_required_plugins') );
+            add_action( 'tgmpa_register', array( $this, 'register_required_plugins') );
 
             // Admin stuff
             // Add the options page and menu item.
-            add_action( 'admin_menu', array( $this, 'add_plugin_admin_menu' ) );
+            add_action( 'admin_menu', array( $this, 'add_admin_menus' ) );
 
-            // Register the settings
-            add_action( 'admin_init', array( $this, 'register_settings' ) );
-
-
-            // Add an action link pointing to the options page.
-            $plugin_basename = plugin_basename( plugin_dir_path( realpath( dirname( __FILE__ ) ) ) . $this->plugin_slug . '.php' );
-            add_filter( 'plugin_action_links_' . $plugin_basename, array( $this, 'add_action_links' ) );
-
-        }
-
-        /**
-         * Return the plugin slug.
-         *
-         * @return    Plugin slug variable.
-         */
-        public function get_plugin_slug() {
-            return $this->plugin_slug;
+            // Register the settings from configuration page
+            add_action( 'admin_init', array( $this, 'register_settings_configuration' ) );
+			
         }
 
         /**
@@ -234,16 +202,11 @@ if ( ! class_exists( 'FCPower' ) ) {
         /**
          * The main logic to set the recommended plugins
          */
-        function fc_power_register_required_plugins() {
+        function register_required_plugins() {
 
-			/*
-			$fc_power_plugin_list = get_option('fc_power_plugin_list');
-			$fc_power_plugin_list = explode(PHP_EOL,trim($fc_power_plugin_list));
-			*/		
+			global $fc_power_plugin_list, $fc_power_plugin_list_private;//lo cogemos del archivo
 			
-			global $fc_power_plugin_list;//lo cogemos del archivo
-			
-            if( get_transient( $this->transient_key )){
+            if(get_transient( $this->transient_key )){
                 $plugins = get_transient( $this->transient_key );
             }else{
 				$plugins = array();
@@ -255,7 +218,10 @@ if ( ! class_exists( 'FCPower' ) ) {
 					$response = wp_remote_post( $url, array( 'body' => $request ) );
 					$plugin_info = unserialize( $response['body'] );
 					if(!isset($plugin_info->name)) continue;
-					$plugins[] = array('slug' =>$slug, 'required'=>'0', 'name'=>$plugin_info->name); 
+					$plugins[] = array('slug' => $slug, 'required' => false, 'name' => $plugin_info->name); 
+				}
+				foreach($fc_power_plugin_list_private as $plugin_array){
+					$plugins[] = $plugin_array;
 				}
 				set_transient($this->transient_key, $plugins, $this->transient_timeout);
 			}
@@ -273,16 +239,18 @@ if ( ! class_exists( 'FCPower' ) ) {
             $config = array(
                     'id'           => $theme_text_domain,                 // Unique ID for hashing notices for multiple instances of TGMPA.
                     'default_path' => '',                      // Default absolute path to bundled plugins.
-                    'menu'         => 'fc-power-install-plugins', // Menu slug.
-                    'parent_slug'  => 'plugins.php',            // Parent menu slug.
-                    'capability'   => 'install_plugins',    // Capability needed to view plugin install page, should be a capability associated with the parent menu used.
+                    'menu'         => 'fc-power-plugins',      // Menu slug.
+					'parent_slug'  => 'fc-power',           // Parent menu slug.
+                    'capability'   => 'install_plugins',       // Capability needed to view plugin install page, should be a capability associated with the parent menu used.
                     'has_notices'  => true,                    // Show admin notices or not.
                     'dismissable'  => true,                    // If false, a user cannot dismiss the nag message.
                     'dismiss_msg'  => '',                      // If 'dismissable' is false, this message will be output at top of nag.
                     'is_automatic' => false,                   // Automatically activate plugins after installation or not.
                     'message'      => '',                      // Message to output right before the plugins table.
                     'strings'      => array(
-                            'page_title'                      => 'Instalación de plugins por defecto',
+                            'page_title'   => 'Instalación de plugins por defecto',
+							'menu_title'   => 'Plugins',
+							'activated_successfully' => 'El plugin fue activado correctamente:',
                             'notice_can_install_required'     => _n_noop(
                                     'FCPower requires the following plugin: %1$s.',
                                     'FCPower requires the following plugins: %1$s.',
@@ -304,39 +272,197 @@ if ( ! class_exists( 'FCPower' ) ) {
         /**
          * Add the menus
          */
-        function add_plugin_admin_menu() {
+        function add_admin_menus() {
 
-            add_menu_page( 'FCPower Settings', 'FCPower', 'install_plugins', 'fc-power', array ( $this, 'fc_power_options_page' ), plugins_url('assets/img/icon.png', dirname(__FILE__)), 69.324 );
-            add_submenu_page('fc-power', 'Manage Keys', 'Manage Keys', 'install_plugins', 'fc-power', array( $this, 'fc_power_options_page' ) );
-
-            /**
-             * Enqueue fc-power.js with jQuery dependency
-             */
+            add_menu_page( 'FCPower Config', 'FCPower', 'install_plugins', 'fc-power', array ( $this, 'fc_power_view_configuration' ), plugins_url('assets/img/icon.png', dirname(__FILE__)), 69.324 );
+            add_submenu_page('fc-power', 'Configuración', 'Configuración', 'install_plugins', 'fc-power', array( $this, 'fc_power_view_settings' ) );
+			
+			if(get_option('fc_power_allow_repair')){
+            	add_submenu_page('fc-power', 'Reparación', 'Reparación', 'install_plugins', 'fc-power-repair', array( $this, 'fc_power_view_repair' ) );
+			}
         }
 
         /**
          * Register the setting for storing keys
          */
-        function register_settings() {
-            add_option( 'fc_power_plugin_list', '');
-            //register_setting( 'default', 'fc_power_plugin_list', array( $this, 'save_keys' ) );
-			register_setting( 'default', 'fc_power_plugin_list' );
+        function register_settings_configuration() {
+            /*add_option( 'fc_power_plugin_list', '');
+			register_setting( 'fc-power-configuration', 'fc_power_plugin_list' );*/
+			
+			//register_setting( 'default', 'fc_power_plugin_list', array( $this, 'save_keys' ) );
+			
+			
+			// Reparación
+			add_settings_section(
+				'fc_power_section_general', // id
+				'General', // title
+				'__return_false', // callback
+				'fc-power-configuration' // page
+			);
+	
+			add_settings_field(
+				'fc_power_email_notificaciones', // id
+				'Email notificaciones', // title
+				array( $this, 'input_text' ), // callback
+				'fc-power-configuration', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_email_notificaciones',
+					'classes'   => array(),
+				) // args
+			);
+
+			add_settings_field(
+				'fc_power_allow_repair', // id
+				'Permitir reparación BBDD', // title
+				array( $this, 'input_checkbox' ), // callback
+				'fc-power-configuration', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_allow_repair',
+					'classes'   => array(),
+				) // args
+			);
+
+			add_settings_field(
+				'fc_power_show_adminmenu', // id
+				'Mostrar Admin Menu', // title
+				array( $this, 'input_checkbox' ), // callback
+				'fc-power-configuration', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_show_adminmenu',
+					'classes'   => array(),
+				) // args
+			);
+
+			add_settings_field(
+				'fc_power_custom_login', // id
+				'Mostrar Custom Login', // title
+				array( $this, 'input_checkbox' ), // callback
+				'fc-power-configuration', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_custom_login',
+					'classes'   => array(),
+				) // args
+			);
+
+			add_settings_field(
+				'fc_power_show_links', // id
+				'Mostrar Menu Enlaces', // title
+				array( $this, 'input_checkbox' ), // callback
+				'fc-power-configuration', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_show_links',
+					'classes'   => array(),
+				) // args
+			);
+												
+			register_setting( 'fc-power-configuration', 'fc_power_email_notificaciones' );
+			register_setting( 'fc-power-configuration', 'fc_power_allow_repair' );
+			register_setting( 'fc-power-configuration', 'fc_power_show_adminmenu' );
+			register_setting( 'fc-power-configuration', 'fc_power_custom_login' );
+			register_setting( 'fc-power-configuration', 'fc_power_show_links' );
+			
 			
         }
 
-        /**
-         * This is the callback for register_setting above
-         * @param $input
-         * @return mixed
-         */
-        function save_keys($input){
-            return $input;
-        }
-
-        /**
-         * Render the settings page
-         */
-        function fc_power_options_page() {
+		/**
+		 * Input text
+		 *
+		 * @param array $args
+		 */
+		public function input_text( $args ) {
+			$name = $args['label_for'];
+	
+			$classes = array( 'regular-text' );
+			if ( isset( $args['classes'] ) ) {
+				$classes = $args['classes'];
+			}
+	
+			printf(
+				'<input name="%s" id="%s" type="text" class="%s" value="%s" />',
+				esc_attr( $name ),
+				esc_attr( $name ),
+				esc_attr( implode( ' ', $classes ) ),
+				esc_attr( get_option( $name, '' ) )
+			);
+		}
+	
+		/**
+		 * Input checkbox
+		 *
+		 * @param array $args
+		 */
+		public function input_checkbox( $args ) {
+			$name = $args['label_for'];
+	
+			$classes = array();
+			if ( isset( $args['classes'] ) ) {
+				$classes = $args['classes'];
+			}
+	
+			printf(
+				'<input name="%s" id="%s" type="checkbox" class="%s" %s />',
+				esc_attr( $name ),
+				esc_attr( $name ),
+				esc_attr( implode( ' ', $classes ) ),
+				checked( 'on', get_option( $name ), false )
+			);
+		}
+	
+		/**
+		 * Input select
+		 *
+		 * @param array $args
+		 */
+		public function input_select( $args ) {
+			$name = $args['label_for'];
+	
+			$classes = array();
+			if ( isset( $args['classes'] ) ) {
+				$classes = $args['classes'];
+			}
+	
+			$options = array();
+			if ( isset( $args['options'] ) ) {
+				$options = $args['options'];
+			}
+	
+			$multiple = false;
+			if ( isset( $args['multiple'] ) && $args['multiple'] ) {
+				$multiple = true;
+			}
+	
+			printf(
+				'<select name="%s" id="%s" class="%s" %s>',
+				esc_attr( $name ) . ( $multiple ? '[]' : '' ),
+				esc_attr( $name ),
+				esc_attr( implode( ' ', $classes ) ),
+				$multiple ? 'multiple="multiple" size="10"' : ''
+			);
+	
+			$current_value = get_option( $name, '' );
+	
+			foreach ( $options as $option_key => $option ) {
+	
+				$selected = ( is_string( $current_value ) && $option_key === $current_value ) ||
+							( is_array( $current_value ) && in_array( $option_key, $current_value ) );
+	
+				printf(
+					'<option value="%s" %s>%s</option>',
+					esc_attr( $option_key ),
+					selected( $selected, true, false ),
+					esc_attr( $option )
+				);
+			}
+	
+			echo '</select>';
+		}
+	
+        function fc_power_view_configuration() {
 
            /* wp_enqueue_script(
                     'fc-power-js-script',
@@ -353,21 +479,11 @@ if ( ! class_exists( 'FCPower' ) ) {
                     plugins_url('assets/css/gridism.css', dirname(__FILE__) )
             );
 
-
-            include( dirname(__FILE__).'/../views/settings.php' );
+            include( dirname(__FILE__).'/../views/configuration.php' );
         }
 
-        /**
-         * Add settings action link to the plugins page.
-         */
-        public function add_action_links( $links ) {
-
-            return array_merge(
-                    array(
-                            'settings' => '<a href="' . admin_url( 'admin.php?page=' . $this->plugin_slug ) . '">' . __( 'Settings', $this->plugin_slug ) . '</a>'
-                    ),
-                    $links
-            );
+        function fc_power_view_repair() {
+            include( dirname(__FILE__).'/../views/repair.php' );
         }
     }
 
