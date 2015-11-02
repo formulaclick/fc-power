@@ -72,7 +72,7 @@ if ( ! class_exists( 'FCPower' ) ) {
 
             return self::$instance;
         }
-
+		
         /**
          * The main logic to set the recommended plugins
          */
@@ -258,7 +258,7 @@ if ( ! class_exists( 'FCPower' ) ) {
 				'fc_power_section_general', // section
 				array(
 					'label_for' => 'fc_power_aviso_legal_tag_titulos',
-					'options'   => array('strong', 'h2', 'h3', 'h4', 'h5', 'h6'),
+					'options'   => array('strong'=>'Negrita', 'h2'=>'Encabezado h2', 'h3'=>'Encabezado h3', 'h4'=>'Encabezado h4', 'h5'=>'Encabezado h5', 'h6'=>'Encabezado h6'),
 				) // args
 			);			
 			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_tag_titulos' );
