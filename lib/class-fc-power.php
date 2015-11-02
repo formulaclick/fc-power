@@ -52,8 +52,9 @@ if ( ! class_exists( 'FCPower' ) ) {
             // Add the options page and menu item.
             add_action( 'admin_menu', array( $this, 'add_admin_menus' ) );
 
-            // Register the settings from configuration page
+            // Register the settings from configuration pages
             add_action( 'admin_init', array( $this, 'register_settings_configuration' ) );
+            add_action( 'admin_init', array( $this, 'register_settings_aviso_legal' ) );
 			
         }
 
@@ -70,133 +71,6 @@ if ( ! class_exists( 'FCPower' ) ) {
             }
 
             return self::$instance;
-        }
-
-        /**
-         * Fired when the plugin is activated.
-         *
-         * @param    boolean    $network_wide    True if WPMU superadmin uses
-         *                                       "Network Activate" action, false if
-         *                                       WPMU is disabled or plugin is
-         *                                       activated on an individual blog.
-         */
-        public static function activate( $network_wide ) {
-
-            if ( function_exists( 'is_multisite' ) && is_multisite() ) {
-
-                if ( $network_wide  ) {
-
-                    // Get all blog ids
-                    $blog_ids = self::get_blog_ids();
-
-                    foreach ( $blog_ids as $blog_id ) {
-
-                        switch_to_blog( $blog_id );
-                        self::single_activate();
-
-                        restore_current_blog();
-                    }
-
-                } else {
-                    self::single_activate();
-                }
-
-
-            } else {
-                self::single_activate();
-            }
-
-        }
-
-        /**
-         * Fired when the plugin is deactivated.
-         * @param    boolean    $network_wide    True if WPMU superadmin uses
-         *                                       "Network Deactivate" action, false if
-         *                                       WPMU is disabled or plugin is
-         *                                       deactivated on an individual blog.
-         */
-        public static function deactivate( $network_wide ) {
-
-            if ( function_exists( 'is_multisite' ) && is_multisite() ) {
-
-                if ( $network_wide ) {
-
-                    // Get all blog ids
-                    $blog_ids = self::get_blog_ids();
-
-                    foreach ( $blog_ids as $blog_id ) {
-
-                        switch_to_blog( $blog_id );
-                        self::single_deactivate();
-
-                        restore_current_blog();
-
-                    }
-
-                } else {
-                    self::single_deactivate();
-                }
-
-            } else {
-                self::single_deactivate();
-            }
-
-        }
-
-
-        /**
-         * Fired when a new site is activated with a WPMU environment.
-         * @param    int    $blog_id    ID of the new blog.
-         */
-        public function activate_new_site( $blog_id ) {
-
-            if ( 1 !== did_action( 'wpmu_new_blog' ) ) {
-                return;
-            }
-
-            switch_to_blog( $blog_id );
-            self::single_activate();
-            restore_current_blog();
-
-        }
-
-        /**
-         * Get all blog ids of blogs in the current network that are:
-         * - not archived
-         * - not spam
-         * - not deleted
-         *
-         * @return   array|false    The blog ids, false if no matches.
-         */
-        private static function get_blog_ids() {
-
-            global $wpdb;
-
-            // get an array of blog ids
-            $sql = "SELECT blog_id FROM $wpdb->blogs
-				WHERE archived = '0' AND spam = '0'
-				AND deleted = '0'";
-
-            return $wpdb->get_col( $sql );
-
-        }
-
-        /**
-         * Fired for each blog when the plugin is activated.
-         *
-         * @since    1.0.0
-         */
-        private static function single_activate() {
-            //
-        }
-
-        /**
-         * Fired for each blog when the plugin is deactivated.
-         *
-         * @since    1.0.0
-         */
-        private static function single_deactivate() {
-            //
         }
 
         /**
@@ -276,6 +150,7 @@ if ( ! class_exists( 'FCPower' ) ) {
 
             add_menu_page( 'FCPower Config', 'FCPower', 'install_plugins', 'fc-power', array ( $this, 'fc_power_view_configuration' ), plugins_url('assets/img/icon.png', dirname(__FILE__)), 69.324 );
             add_submenu_page('fc-power', 'Configuración', 'Configuración', 'install_plugins', 'fc-power', array( $this, 'fc_power_view_settings' ) );
+            add_submenu_page('fc-power', 'Aviso Legal y privacidad', 'Aviso Legal', 'install_plugins', 'fc-power-aviso-legal', array( $this, 'fc_power_view_aviso_legal' ) );
 			
 			if(get_option('fc_power_allow_repair')){
             	add_submenu_page('fc-power', 'Reparación', 'Reparación', 'install_plugins', 'fc-power-repair', array( $this, 'fc_power_view_repair' ) );
@@ -283,16 +158,12 @@ if ( ! class_exists( 'FCPower' ) ) {
         }
 
         /**
-         * Register the setting for storing keys
+         * Register the settings
          */
         function register_settings_configuration() {
-            /*add_option( 'fc_power_plugin_list', '');
-			register_setting( 'fc-power-configuration', 'fc_power_plugin_list' );*/
-			
-			//register_setting( 'default', 'fc_power_plugin_list', array( $this, 'save_keys' ) );
-			
-			
-			// Reparación
+            //add_option( 'fc_power_plugin_list', '');
+		
+			// general
 			add_settings_section(
 				'fc_power_section_general', // id
 				'General', // title
@@ -365,10 +236,153 @@ if ( ! class_exists( 'FCPower' ) ) {
 			register_setting( 'fc-power-configuration', 'fc_power_show_adminmenu' );
 			register_setting( 'fc-power-configuration', 'fc_power_custom_login' );
 			register_setting( 'fc-power-configuration', 'fc_power_show_links' );
-			
+			//register_setting( 'default', 'fc_power_plugin_list', array( $this, 'save_keys' ) );
 			
         }
+		
+		function register_settings_aviso_legal() {
+			
+			// general
+			add_settings_section(
+				'fc_power_section_general', // id
+				'Datos del aviso legal', // title
+				'__return_false', // callback
+				'fc-power-aviso-legal' // page
+			);		
+				
+			add_settings_field(
+				'fc_power_aviso_legal_tag_titulos', // id
+				'Tag de los títulos', // title
+				array( $this, 'input_select' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_tag_titulos',
+					'options'   => array('strong', 'h2', 'h3', 'h4', 'h5', 'h6'),
+				) // args
+			);			
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_tag_titulos' );
 
+			add_settings_field(
+				'fc_power_aviso_legal_RRRRR', // id
+				'Nombre real de la empresa', // title
+				array( $this, 'input_text' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_RRRRR',
+					'classes'   => array(),
+				) // args
+			);		
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_RRRRR' );
+			
+			add_settings_field(
+				'fc_power_aviso_legal_NNNNN', // id
+				'Alias', // title
+				array( $this, 'input_text' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_NNNNN',
+					'description'   => 'Nombre por el que se conoce al propietario de la empresa',
+				) // args
+			);		
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_NNNNN' );
+			
+			add_settings_field(
+				'fc_power_aviso_legal_WWWWW', // id
+				'URL página (sin http://)', // title
+				array( $this, 'input_text' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_WWWWW',
+				) // args
+			);		
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_WWWWW' );
+
+			add_settings_field(
+				'fc_power_aviso_legal_QQQQQ', // id
+				'Población donde está registrada', // title
+				array( $this, 'input_text' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_QQQQQ',
+				) // args
+			);		
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_QQQQQ' );
+
+			add_settings_field(
+				'fc_power_aviso_legal_EEEEE', // id
+				'Email de contacto', // title
+				array( $this, 'input_text' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_EEEEE',
+				) // args
+			);		
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_EEEEE' );
+
+			add_settings_field(
+				'fc_power_aviso_legal_CCCC', // id
+				'CIF o NIF', // title
+				array( $this, 'input_text' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_CCCC',
+				) // args
+			);		
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_CCCC' );
+			
+			add_settings_field(
+				'fc_power_aviso_legal_DDDD', // id
+				'Dirección', // title
+				array( $this, 'input_text' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_DDDD',
+				) // args
+			);		
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_DDDD' );
+			
+			add_settings_field(
+				'fc_power_aviso_legal_MMMM', // id
+				'Datos registro mercantil', // title
+				array( $this, 'input_textarea' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_MMMM',
+					'description' => 'Ejemplo: Registro Mercantil de ... inscripción ..., Tomo ... , Sección G...., Folio ......, Hoja .....'
+				) // args
+			);		
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_MMMM' );
+
+			$pages = get_pages(); 
+			$options = array('0'=>'-- No usar --');
+			foreach($pages as $page){
+				$options[$page->ID] = $page->post_title;
+			}
+			add_settings_field(
+				'fc_power_aviso_legal_pagina', // id
+				'Página a utilizar', // title
+				array( $this, 'input_select' ), // callback
+				'fc-power-aviso-legal', // page
+				'fc_power_section_general', // section
+				array(
+					'label_for' => 'fc_power_aviso_legal_pagina',
+					'options'   => $options,
+				) // args
+			);
+			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_pagina' );		
+			
+			
+		}
+		
 		/**
 		 * Input text
 		 *
@@ -381,16 +395,50 @@ if ( ! class_exists( 'FCPower' ) ) {
 			if ( isset( $args['classes'] ) ) {
 				$classes = $args['classes'];
 			}
-	
+			
+			$description = '';
+			if ( isset( $args['description'] ) ) {
+				$description = '<br /><span class="description">'.$args['description'].'</span>';
+			}
+				
 			printf(
-				'<input name="%s" id="%s" type="text" class="%s" value="%s" />',
+				'<input name="%s" id="%s" type="text" class="%s" value="%s" />%s',
 				esc_attr( $name ),
 				esc_attr( $name ),
 				esc_attr( implode( ' ', $classes ) ),
-				esc_attr( get_option( $name, '' ) )
+				esc_attr( get_option( $name, '' ) ),
+				$description
 			);
 		}
+
+		/**
+		 * Input text
+		 *
+		 * @param array $args
+		 */
+		public function input_textarea( $args ) {
+			$name = $args['label_for'];
 	
+			$classes = array( 'regular-text' );
+			if ( isset( $args['classes'] ) ) {
+				$classes = $args['classes'];
+			}
+			
+			$description = '';
+			if ( isset( $args['description'] ) ) {
+				$description = '<br /><span class="description">'.$args['description'].'</span>';
+			}
+				
+			printf(
+				'<textarea name="%s" id="%s" class="%s">%s</textarea>%s',
+				esc_attr( $name ),
+				esc_attr( $name ),
+				esc_attr( implode( ' ', $classes ) ),
+				esc_attr( get_option( $name, '' ) ),
+				$description
+			);
+		}
+			
 		/**
 		 * Input checkbox
 		 *
@@ -443,14 +491,14 @@ if ( ! class_exists( 'FCPower' ) ) {
 				esc_attr( implode( ' ', $classes ) ),
 				$multiple ? 'multiple="multiple" size="10"' : ''
 			);
-	
+			
 			$current_value = get_option( $name, '' );
 	
 			foreach ( $options as $option_key => $option ) {
 	
-				$selected = ( is_string( $current_value ) && $option_key === $current_value ) ||
+				$selected = ( is_string( $current_value ) && (string)$option_key === $current_value ) ||
 							( is_array( $current_value ) && in_array( $option_key, $current_value ) );
-	
+				
 				printf(
 					'<option value="%s" %s>%s</option>',
 					esc_attr( $option_key ),
@@ -483,8 +531,142 @@ if ( ! class_exists( 'FCPower' ) ) {
         }
 
         function fc_power_view_repair() {
+			
             include( dirname(__FILE__).'/../views/repair.php' );
+			
         }
+		
+        function fc_power_view_aviso_legal() {
+			
+            include( dirname(__FILE__).'/../views/aviso-legal.php' );
+			
+        }		
+		
+        /**
+         * Fired when the plugin is activated.
+         *
+         * @param    boolean    $network_wide    True if WPMU superadmin uses
+         *                                       "Network Activate" action, false if
+         *                                       WPMU is disabled or plugin is
+         *                                       activated on an individual blog.
+         */
+        public static function activate( $network_wide ) {
+
+            if ( function_exists( 'is_multisite' ) && is_multisite() ) {
+
+                if ( $network_wide  ) {
+
+                    // Get all blog ids
+                    $blog_ids = self::get_blog_ids();
+
+                    foreach ( $blog_ids as $blog_id ) {
+
+                        switch_to_blog( $blog_id );
+                        self::single_activate();
+
+                        restore_current_blog();
+                    }
+
+                } else {
+                    self::single_activate();
+                }
+
+
+            } else {
+                self::single_activate();
+            }
+
+        }
+
+        /**
+         * Fired when the plugin is deactivated.
+         * @param    boolean    $network_wide    True if WPMU superadmin uses
+         *                                       "Network Deactivate" action, false if
+         *                                       WPMU is disabled or plugin is
+         *                                       deactivated on an individual blog.
+         */
+        public static function deactivate( $network_wide ) {
+
+            if ( function_exists( 'is_multisite' ) && is_multisite() ) {
+
+                if ( $network_wide ) {
+
+                    // Get all blog ids
+                    $blog_ids = self::get_blog_ids();
+
+                    foreach ( $blog_ids as $blog_id ) {
+
+                        switch_to_blog( $blog_id );
+                        self::single_deactivate();
+
+                        restore_current_blog();
+
+                    }
+
+                } else {
+                    self::single_deactivate();
+                }
+
+            } else {
+                self::single_deactivate();
+            }
+
+        }
+
+        /**
+         * Fired when a new site is activated with a WPMU environment.
+         * @param    int    $blog_id    ID of the new blog.
+         */
+        public function activate_new_site( $blog_id ) {
+
+            if ( 1 !== did_action( 'wpmu_new_blog' ) ) {
+                return;
+            }
+
+            switch_to_blog( $blog_id );
+            self::single_activate();
+            restore_current_blog();
+
+        }
+
+        /**
+         * Get all blog ids of blogs in the current network that are:
+         * - not archived
+         * - not spam
+         * - not deleted
+         *
+         * @return   array|false    The blog ids, false if no matches.
+         */
+        private static function get_blog_ids() {
+
+            global $wpdb;
+
+            // get an array of blog ids
+            $sql = "SELECT blog_id FROM $wpdb->blogs
+				WHERE archived = '0' AND spam = '0'
+				AND deleted = '0'";
+
+            return $wpdb->get_col( $sql );
+
+        }
+
+        /**
+         * Fired for each blog when the plugin is activated.
+         *
+         * @since    1.0.0
+         */
+        private static function single_activate() {
+            //
+        }
+
+        /**
+         * Fired for each blog when the plugin is deactivated.
+         *
+         * @since    1.0.0
+         */
+        private static function single_deactivate() {
+            //
+        }		
     }
 
 }

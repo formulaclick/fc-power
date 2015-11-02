@@ -8,7 +8,6 @@
  * License: GPL2
  */
 
-
 // Inicializamos updater
 if( ! class_exists( 'FC_Updater' ) ){
 	include_once( plugin_dir_path( __FILE__ ) . 'updater.php' );
@@ -50,7 +49,6 @@ if ( is_admin() && ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) ) {
 	}else{
 		update_option( 'link_manager_enabled', 1 );
 	}	
-	
 	
 	require_once( plugin_dir_path( __FILE__ ) . 'plugin-list.php' );
 	require_once( plugin_dir_path( __FILE__ ) . 'lib/class-fc-power.php' );
