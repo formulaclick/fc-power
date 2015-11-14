@@ -149,7 +149,7 @@ if ( ! class_exists( 'FCPower' ) ) {
         function add_admin_menus() {
 
             add_menu_page( 'FCPower Config', 'FCPower', 'install_plugins', 'fc-power', array ( $this, 'fc_power_view_configuration' ), plugins_url('assets/img/icon.png', dirname(__FILE__)), 69.324 );
-            add_submenu_page('fc-power', 'Configuración', 'Configuración', 'install_plugins', 'fc-power', array( $this, 'fc_power_view_settings' ) );
+            add_submenu_page('fc-power', 'Configuración', 'Configuración', 'install_plugins', 'fc-power', array( $this, 'fc_power_view_configuration' ) );
             add_submenu_page('fc-power', 'Aviso Legal y privacidad', 'Aviso Legal', 'install_plugins', 'fc-power-aviso-legal', array( $this, 'fc_power_view_aviso_legal' ) );
 			
 			if(get_option('fc_power_allow_repair')){
