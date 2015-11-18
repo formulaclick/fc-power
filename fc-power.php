@@ -2,7 +2,7 @@
 /**
  * Plugin Name: FC Power
  * Description: Plugin con funciones y seteos personalizados
- * Version: 1.0.8
+ * Version: 1.0.9
  * Author: Formula Click
  * Author URI: http://www.formulaclick.com
  * License: GPL2
@@ -74,6 +74,11 @@ if  ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
 				$fc_legal_vars['%%DDDD%%'] = get_option('fc_power_aviso_legal_DDDD');
 				$fc_legal_vars['%%MMMM%%'] = get_option('fc_power_aviso_legal_MMMM');
 				include 'template-aviso-legal.php';
+				
+				if($fc_legal_vars['%%MMMM%%'] == ''){
+					$template = str_replace(' inscrita en el %%MMMM%%','', $template);
+				}
+				
 				$content = str_replace(array_keys($fc_legal_vars), array_values($fc_legal_vars), $template);
 			}
 			
