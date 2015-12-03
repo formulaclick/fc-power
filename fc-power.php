@@ -22,6 +22,8 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+require_once( plugin_dir_path( __FILE__ ) . 'functions.php' );
+
 if  ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
 	
 	if (is_admin()){
@@ -36,7 +38,6 @@ if  ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
 
 		//No Mostrar links
 		if(!get_option('fc_power_show_links')){
-			
 			update_option( 'link_manager_enabled', 0 );
 		}else{
 			update_option( 'link_manager_enabled', 1 );
