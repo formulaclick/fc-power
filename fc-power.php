@@ -2,7 +2,7 @@
 /**
  * Plugin Name: FC Power
  * Description: Plugin con funciones y seteos personalizados
- * Version: 1.0.9
+ * Version: 1.0.10
  * Author: Formula Click
  * Author URI: http://www.formulaclick.com
  * License: GPL2

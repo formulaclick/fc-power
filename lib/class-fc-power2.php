@@ -56,9 +56,6 @@ if ( ! class_exists( 'FCPower' ) ) {
             add_action( 'admin_init', array( $this, 'register_settings_configuration' ) );
             add_action( 'admin_init', array( $this, 'register_settings_aviso_legal' ) );
 			
-			
-			error_log("probando");
-			
         }
 
         /**
