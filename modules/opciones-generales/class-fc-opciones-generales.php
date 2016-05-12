@@ -122,8 +122,8 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 			if($this->options['disable_update_notices']){
 		        global $current_user;
 		        get_currentuserinfo();
-		        //if ($current_user->ID != 1) { // solo el admin lo ve, cambia el ID de usuario si no es el 1 o añade todso los IDs de admin
-		        if(4==4){
+		        if ($current_user->ID != 1) { // solo el admin lo ve, cambia el ID de usuario si no es el 1 o añade todso los IDs de admin
+		        //if(4==4){
 		        	
 		        	/* Aviso de actualizaciones*/
 					add_action( 'admin_head', function(){
