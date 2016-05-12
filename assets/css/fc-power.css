@@ -1,3 +1,16 @@
 /* CSS */
 
 
+.fc-power-edit-view textarea{
+
+	width: 100%;
+
+}
+
+textarea.fcp_aviso_legal_plantilla{
+	width: 100%;
+	height: 500px;
+
+
+}
+

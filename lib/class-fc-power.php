@@ -48,16 +48,11 @@ if ( ! class_exists( 'FCPower' ) ) {
             // Main functions
             add_action( 'tgmpa_register', array( $this, 'register_required_plugins') );
 
-            // Admin stuff
             // Add the options page and menu item.
             add_action( 'admin_menu', array( $this, 'add_admin_menus' ) );
 
-            // Register the settings from configuration pages
-            add_action( 'admin_init', array( $this, 'register_settings_configuration' ) );
-            add_action( 'admin_init', array( $this, 'register_settings_aviso_legal' ) );
-			
-			
-			error_log("probando");
+            // Añadimos scripts al admin
+            add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 			
         }
 
@@ -75,7 +70,32 @@ if ( ! class_exists( 'FCPower' ) ) {
 
             return self::$instance;
         }
-		
+
+        function add_admin_menus() {
+
+            add_menu_page( 'FCPower Config', 'FCPower', 'install_plugins', 'fc-power', array ( $this, 'fc_power_opciones_generales_view' ), plugins_url('assets/img/icon.png', dirname(__FILE__)), 69.324 );
+            add_submenu_page('fc-power', 'Configuraciones generales', 'Configuración', 'install_plugins', 'fc-power', array( $this, 'fc_power_opciones_generales_view' ) );
+            add_submenu_page('fc-power', 'Configuración SMTP para enviar correos', 'Envíos SMTP', 'install_plugins', 'fc-power-envios-smtp', array( $this, 'fc_power_envios_smtp_view' ) );
+            add_submenu_page('fc-power', 'Configuración automática del aviso legal', 'Aviso legal', 'install_plugins', 'fc-power-aviso-legal', array( $this, 'fc_power_aviso_legal_view' ) );
+
+        }
+
+        function enqueue_admin_scripts() {
+            wp_enqueue_style( 'fc-power-style', plugins_url('../assets/css/fc-power.css',__FILE__ ) );
+        }
+
+        function fc_power_opciones_generales_view() {
+            include( dirname(__FILE__).'/../modules/opciones-generales/edit-view.php' );
+        }
+
+        function fc_power_envios_smtp_view() {
+            include( dirname(__FILE__).'/../modules/envios-smtp/edit-view.php' );
+        }
+
+        function fc_power_aviso_legal_view() {
+            include( dirname(__FILE__).'/../modules/aviso-legal/edit-view.php' );
+        }
+
         /**
          * The main logic to set the recommended plugins
          */
@@ -146,247 +166,7 @@ if ( ! class_exists( 'FCPower' ) ) {
             }
         }
 
-        /**
-         * Add the menus
-         */
-        function add_admin_menus() {
-
-            add_menu_page( 'FCPower Config', 'FCPower', 'install_plugins', 'fc-power', array ( $this, 'fc_power_view_configuration' ), plugins_url('assets/img/icon.png', dirname(__FILE__)), 69.324 );
-            add_submenu_page('fc-power', 'Configuración', 'Configuración', 'install_plugins', 'fc-power', array( $this, 'fc_power_view_configuration' ) );
-            add_submenu_page('fc-power', 'Aviso Legal y privacidad', 'Aviso Legal', 'install_plugins', 'fc-power-aviso-legal', array( $this, 'fc_power_view_aviso_legal' ) );
-			add_submenu_page('fc-power', 'Debug', 'Debug', 'install_plugins', 'fc-power-debug', array( $this, 'fc_power_view_debug' ) );
-			
-			if(get_option('fc_power_allow_repair')){
-            	add_submenu_page('fc-power', 'Reparación', 'Reparación', 'install_plugins', 'fc-power-repair', array( $this, 'fc_power_view_repair' ) );
-			}
-        }
-
-        /**
-         * Register the settings
-         */
-        function register_settings_configuration() {
-            //add_option( 'fc_power_plugin_list', '');
-		
-			// general
-			add_settings_section(
-				'fc_power_section_general', // id
-				'General', // title
-				'__return_false', // callback
-				'fc-power-configuration' // page
-			);
 	
-			add_settings_field(
-				'fc_power_email_notificaciones', // id
-				'Email notificaciones', // title
-				array( $this, 'input_text' ), // callback
-				'fc-power-configuration', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_email_notificaciones',
-					'classes'   => array(),
-				) // args
-			);
-
-			add_settings_field(
-				'fc_power_allow_repair', // id
-				'Permitir reparación BBDD', // title
-				array( $this, 'input_checkbox' ), // callback
-				'fc-power-configuration', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_allow_repair',
-					'classes'   => array(),
-				) // args
-			);
-
-			add_settings_field(
-				'fc_power_show_adminmenu', // id
-				'Mostrar Admin Menu', // title
-				array( $this, 'input_checkbox' ), // callback
-				'fc-power-configuration', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_show_adminmenu',
-					'classes'   => array(),
-				) // args
-			);
-
-			add_settings_field(
-				'fc_power_custom_login', // id
-				'Mostrar Custom Login', // title
-				array( $this, 'input_checkbox' ), // callback
-				'fc-power-configuration', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_custom_login',
-					'classes'   => array(),
-				) // args
-			);
-
-			add_settings_field(
-				'fc_power_show_links', // id
-				'Mostrar Menu Enlaces', // title
-				array( $this, 'input_checkbox' ), // callback
-				'fc-power-configuration', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_show_links',
-					'classes'   => array(),
-				) // args
-			);
-												
-			register_setting( 'fc-power-configuration', 'fc_power_email_notificaciones' );
-			register_setting( 'fc-power-configuration', 'fc_power_allow_repair' );
-			register_setting( 'fc-power-configuration', 'fc_power_show_adminmenu' );
-			register_setting( 'fc-power-configuration', 'fc_power_custom_login' );
-			register_setting( 'fc-power-configuration', 'fc_power_show_links' );
-			//register_setting( 'default', 'fc_power_plugin_list', array( $this, 'save_keys' ) );
-			
-        }
-		
-		function register_settings_aviso_legal() {
-			
-			// general
-			add_settings_section(
-				'fc_power_section_general', // id
-				'Datos del aviso legal', // title
-				'__return_false', // callback
-				'fc-power-aviso-legal' // page
-			);		
-				
-			add_settings_field(
-				'fc_power_aviso_legal_tag_titulos', // id
-				'Tag de los títulos', // title
-				array( $this, 'input_select' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_tag_titulos',
-					'options'   => array('strong'=>'Negrita', 'h2'=>'Encabezado h2', 'h3'=>'Encabezado h3', 'h4'=>'Encabezado h4', 'h5'=>'Encabezado h5', 'h6'=>'Encabezado h6'),
-				) // args
-			);			
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_tag_titulos' );
-
-			add_settings_field(
-				'fc_power_aviso_legal_RRRRR', // id
-				'Nombre real de la empresa', // title
-				array( $this, 'input_text' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_RRRRR',
-					'classes'   => array(),
-				) // args
-			);		
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_RRRRR' );
-			
-			add_settings_field(
-				'fc_power_aviso_legal_NNNNN', // id
-				'Alias', // title
-				array( $this, 'input_text' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_NNNNN',
-					'description'   => 'Nombre por el que se conoce al propietario de la empresa',
-				) // args
-			);		
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_NNNNN' );
-			
-			add_settings_field(
-				'fc_power_aviso_legal_WWWWW', // id
-				'URL página (sin http://)', // title
-				array( $this, 'input_text' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_WWWWW',
-				) // args
-			);		
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_WWWWW' );
-
-			add_settings_field(
-				'fc_power_aviso_legal_QQQQQ', // id
-				'Población donde está registrada', // title
-				array( $this, 'input_text' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_QQQQQ',
-				) // args
-			);		
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_QQQQQ' );
-
-			add_settings_field(
-				'fc_power_aviso_legal_EEEEE', // id
-				'Email de contacto', // title
-				array( $this, 'input_text' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_EEEEE',
-				) // args
-			);		
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_EEEEE' );
-
-			add_settings_field(
-				'fc_power_aviso_legal_CCCC', // id
-				'CIF o NIF', // title
-				array( $this, 'input_text' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_CCCC',
-				) // args
-			);		
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_CCCC' );
-			
-			add_settings_field(
-				'fc_power_aviso_legal_DDDD', // id
-				'Dirección', // title
-				array( $this, 'input_text' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_DDDD',
-				) // args
-			);		
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_DDDD' );
-			
-			add_settings_field(
-				'fc_power_aviso_legal_MMMM', // id
-				'Datos registro mercantil', // title
-				array( $this, 'input_textarea' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_MMMM',
-					'description' => 'Ejemplo: Registro Mercantil de ... inscripción ..., Tomo ... , Sección G...., Folio ......, Hoja .....'
-				) // args
-			);		
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_MMMM' );
-
-			$pages = get_pages(); 
-			$options = array('0'=>'-- No usar --');
-			foreach($pages as $page){
-				$options[$page->ID] = $page->post_title;
-			}
-			add_settings_field(
-				'fc_power_aviso_legal_pagina', // id
-				'Página a utilizar', // title
-				array( $this, 'input_select' ), // callback
-				'fc-power-aviso-legal', // page
-				'fc_power_section_general', // section
-				array(
-					'label_for' => 'fc_power_aviso_legal_pagina',
-					'options'   => $options,
-				) // args
-			);
-			register_setting( 'fc-power-aviso-legal', 'fc_power_aviso_legal_pagina' );		
-			
-			
-		}
-		
 		/**
 		 * Input text
 		 *
@@ -513,44 +293,7 @@ if ( ! class_exists( 'FCPower' ) ) {
 	
 			echo '</select>';
 		}
-	
-        function fc_power_view_configuration() {
 
-           /* wp_enqueue_script(
-                    'fc-power-js-script',
-                    plugins_url('assets/js/fc-power.js', dirname(__FILE__) ),
-                    array( 'jquery' )
-            );*/
-
-            wp_enqueue_style(
-                    'fc-power-css',
-                    plugins_url('assets/css/fc-power.css', dirname(__FILE__) )
-            );
-            wp_enqueue_style(
-                    'fc-power-gridism',
-                    plugins_url('assets/css/gridism.css', dirname(__FILE__) )
-            );
-
-            include( dirname(__FILE__).'/../views/configuration.php' );
-        }
-
-        function fc_power_view_repair() {
-			
-            include( dirname(__FILE__).'/../views/repair.php' );
-			
-        }
-		
-        function fc_power_view_aviso_legal() {
-			
-            include( dirname(__FILE__).'/../views/aviso-legal.php' );
-			
-        }		
-		
-        function fc_power_view_debug() {
-			
-            include( dirname(__FILE__).'/../views/debug.php' );
-			
-        }
 				
         /**
          * Fired when the plugin is activated.

@@ -6,7 +6,6 @@
             <p>Yo! Click the following link to optimize/repair your database:</p>
             <p><a target="_blank" href="<?php echo get_admin_url(); ?>maint/repair.php"><?php echo get_admin_url(); ?>maint/repair.php</a></p>
             <p><strong>Remember to deactivate the plugin</strong> when done optimizing!</p>
-
 		</div>
 	</div>
 </div>
