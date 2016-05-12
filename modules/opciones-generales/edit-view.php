@@ -5,11 +5,11 @@
         echo "<div class='updated'><p>Datos guardados correctamente</p></div>";
     } ?>
 
-    <?php //settings_errors(); ?>
-    
 	<h2><?php echo esc_html( get_admin_page_title() ); ?></h2>
     
-	<?php if(get_option('fc_power_opciones_generales_allow_repair')){?>    
+	<?php 
+	$options = get_option('fc_power_opciones_generales', null);
+	if($options['allow_repair']){?>    
 
 		<div class="grid">
 			<div class="unit three-quarters">
