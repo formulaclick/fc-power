@@ -35,10 +35,9 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
             // Opciones de disable xmlrpc
 			add_action( 'init', array( $this, 'do_opciones_generales_disable_xmlrpc' ) );
 
-            // Opciones de disable xmlrpc
-			add_action( 'admin_menu', array( $this, 'do_opciones_generales_disable_update_notices' ) );
+            // Opciones de disable update notices
+            add_action( 'init', array( $this, 'do_opciones_generales_disable_update_notices' ) );
 
-			
         }
 
         function do_opciones_generales_allow_repair(){
@@ -123,8 +122,27 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 			if($this->options['disable_update_notices']){
 		        global $current_user;
 		        get_currentuserinfo();
-		        if ($current_user->ID != 1) { // solo el admin lo ve, cambia el ID de usuario si no es el 1 o añade todso los IDs de admin
-		            remove_action( 'admin_notices', 'update_nag', 3 );
+		        //if ($current_user->ID != 1) { // solo el admin lo ve, cambia el ID de usuario si no es el 1 o añade todso los IDs de admin
+		        if(4==4){
+		        	
+		        	/* Aviso de actualizaciones*/
+					add_action( 'admin_head', function(){
+						remove_action( 'admin_notices', 'update_nag', 3 );
+					});
+
+					/* actualizaciones de plugins, temas y core*/
+					function remove_wp_core_updates(){
+					    global $wp_version;
+					    return(object) array('last_checked' => time(),'version_checked' => $wp_version);
+					}
+					add_filter('pre_site_transient_update_core','remove_wp_core_updates');
+					add_filter('pre_site_transient_update_plugins','remove_wp_core_updates');
+					add_filter('pre_site_transient_update_themes','remove_wp_core_updates');
+		            
+					/*Actualizacion de Core*/
+					remove_action('load-update-core.php','wp_update_plugins');
+					add_filter('pre_site_transient_update_plugins','__return_null');
+
 		        }
 			}	
 
