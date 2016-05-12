@@ -34,6 +34,10 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 
             // Opciones de disable xmlrpc
 			add_action( 'init', array( $this, 'do_opciones_generales_disable_xmlrpc' ) );
+
+            // Opciones de disable xmlrpc
+			add_action( 'admin_menu', array( $this, 'do_opciones_generales_disable_update_notices' ) );
+
 			
         }
 
@@ -110,6 +114,18 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 
 			if($this->options['disable_xmlrpc']){
 				add_filter('xmlrpc_enabled', '__return_false');
+			}	
+
+        }
+
+        function do_opciones_generales_disable_update_notices(){
+
+			if($this->options['disable_update_notices']){
+		        global $current_user;
+		        get_currentuserinfo();
+		        if ($current_user->ID != 1) { // solo el admin lo ve, cambia el ID de usuario si no es el 1 o añade todso los IDs de admin
+		            remove_action( 'admin_notices', 'update_nag', 3 );
+		        }
 			}	
 
         }
@@ -240,6 +256,23 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 					'field' => $field,
 				)
 			);	
+
+
+			//Campos
+			$field = 'disable_update_notices';
+			$this->fields_to_save[] = $field;
+			add_settings_field(
+				$option_name.'['.$field.']',
+				'Ocultar avisos actualizaciones',
+				array( $this, 'input_checkbox' ),
+				$page,
+				$section,
+				array(
+					'label_for' => $option_name.'['.$field.']',
+					'field' => $field,
+				)
+			);		
+
 
 			register_setting( $group, $option_name, array($this, 'setting_validate') );
 
