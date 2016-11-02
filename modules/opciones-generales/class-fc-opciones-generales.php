@@ -40,21 +40,25 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 
         }
 
+		function check_option($option = ''){
+			return (isset($this->options[$option]) && $this->options[$option]);
+		}
+
         function do_opciones_generales_allow_repair(){
-			 if($this->options['allow_repair']){
+			 if($this->check_option('allow_repair')){
 				define('WP_ALLOW_REPAIR', true);
 			}
         }
 
         function do_opciones_generales_avoid_regenerate_themes(){
-        	if($this->options['avoid_regenerate_themes']){
+        	if($this->check_option('avoid_regenerate_themes')){
 				define( 'CORE_UPGRADE_SKIP_NEW_BUNDLED', true );
 			}
         }
 
         function do_opciones_generales_show_links(){
         	if (is_admin()){
-			 	if(!$this->options['show_links']){
+			 	if(!$this->check_option('show_links')){
 					update_option( 'link_manager_enabled', 0 );
 				}else{
 					update_option( 'link_manager_enabled', 1 );
@@ -64,14 +68,14 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 
         function do_opciones_generales_show_adminmenu(){
         	if (!is_admin()){
-				if(!$this->options['show_adminmenu']){
+				if(!$this->check_option('show_adminmenu')){
 					add_filter('show_admin_bar', '__return_false');
 				}	
 			}
         }
 
         function do_opciones_generales_custom_login(){
-			if($this->options['custom_login']){
+			if($this->check_option('custom_login')){
 				add_action( 'login_enqueue_scripts', array( $this, 'show_custom_logo' )  );
 			}	
         }
@@ -88,7 +92,7 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 
         function do_opciones_generales_disable_emojis(){
 
-			if($this->options['disable_emojis']){
+			if($this->check_option('disable_emojis')){
 				remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
 				remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
 				remove_action( 'wp_print_styles', 'print_emoji_styles' );
@@ -111,7 +115,7 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 
         function do_opciones_generales_disable_xmlrpc(){
 
-			if($this->options['disable_xmlrpc']){
+			if($this->check_option('disable_xmlrpc')){
 				add_filter('xmlrpc_enabled', '__return_false');
 			}	
 
@@ -119,9 +123,10 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 
         function do_opciones_generales_disable_update_notices(){
 
-			if($this->options['disable_update_notices']){
+			if($this->check_option('disable_update_notices')){
 		        global $current_user;
-		        get_currentuserinfo();
+		        //wp_get_current_user(); //en teoria no hace falta
+
 		        if ($current_user->ID != 1) { // solo el admin lo ve, cambia el ID de usuario si no es el 1 o añade todso los IDs de admin
 		        //if(4==4){
 		        	

@@ -1,5 +1,7 @@
 <?php
 
+/*Seteos por defecto */
+
 $fcp_smtp_config = array(
 	'from_email' => 'notificaciones-wp@formulaclick.net',
 	'from_name' => 'Notificaciones Wordpress',

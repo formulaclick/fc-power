@@ -9,7 +9,7 @@
     
 	<?php 
 	$options = get_option('fc_power_opciones_generales', null);
-	if($options['allow_repair']){?>    
+	if(isset($options['allow_repair']) && $options['allow_repair']){?>    
 
 		<div class="grid">
 			<div class="unit three-quarters">

@@ -25,9 +25,9 @@ if ( ! defined( 'WPINC' ) ) {
 require_once( plugin_dir_path( __FILE__ ) . 'functions.php' );
 
 if  ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
-	require_once( plugin_dir_path( __FILE__ ) . 'plugin-list.php' );
+	//require_once( plugin_dir_path( __FILE__ ) . 'plugin-list.php' );
 	require_once( plugin_dir_path( __FILE__ ) . 'lib/class-fc-power.php' );
-	require_once( plugin_dir_path( __FILE__ ) . 'lib/class-tgm-plugin-activation.php' );
+	//require_once( plugin_dir_path( __FILE__ ) . 'lib/class-tgm-plugin-activation.php' );
 	require_once( plugin_dir_path( __FILE__ ) . 'lib/class-fc-module.php' );
 	require_once( plugin_dir_path( __FILE__ ) . 'modules/opciones-generales/class-fc-opciones-generales.php' );
 	require_once( plugin_dir_path( __FILE__ ) . 'modules/envios-smtp/class-fc-envios-smtp.php' );
