@@ -45,8 +45,6 @@ if ( ! class_exists( 'FCPower' ) ) {
             // Activate plugin when new blog is added
             add_action( 'wpmu_new_blog', array( $this, 'activate_new_site' ) );
 
-            // Main functions
-            add_action( 'tgmpa_register', array( $this, 'register_required_plugins') );
 
             // Add the options page and menu item.
             add_action( 'admin_menu', array( $this, 'add_admin_menus' ) );
@@ -95,77 +93,6 @@ if ( ! class_exists( 'FCPower' ) ) {
         function fc_power_aviso_legal_view() {
             include( dirname(__FILE__).'/../modules/aviso-legal/edit-view.php' );
         }
-
-        /**
-         * The main logic to set the recommended plugins
-         */
-        function register_required_plugins() {
-
-			global $fc_power_plugin_list, $fc_power_plugin_list_private;//lo cogemos del archivo
-			
-            if(get_transient( $this->transient_key )){
-                $plugins = get_transient( $this->transient_key );
-            }else{
-				$plugins = array();
-				foreach($fc_power_plugin_list as $slug){
-					$slug = trim($slug);
-					$args = (object) array( 'slug' => $slug );
-					$request = array( 'action' => 'plugin_information', 'timeout' => 15, 'request' => serialize( $args) );
-					$url = 'http://api.wordpress.org/plugins/info/1.0/';
-					$response = wp_remote_post( $url, array( 'body' => $request ) );
-					$plugin_info = unserialize( $response['body'] );
-					if(!isset($plugin_info->name)) continue;
-					$plugins[] = array('slug' => $slug, 'required' => false, 'name' => $plugin_info->name); 
-				}
-				foreach($fc_power_plugin_list_private as $plugin_array){
-					$plugins[] = $plugin_array;
-				}
-				set_transient($this->transient_key, $plugins, $this->transient_timeout);
-			}
-
-            // convert to object
-            $theme_text_domain = 'tgmpa';
-
-            /**
-             * Array of configuration settings. Amend each line as needed.
-             * If you want the default strings to be available under your own theme domain,
-             * leave the strings uncommented.
-             * Some of the strings are added into a sprintf, so see the comments at the
-             * end of each line for what each argument will be.
-             */
-            $config = array(
-                    'id'           => $theme_text_domain,                 // Unique ID for hashing notices for multiple instances of TGMPA.
-                    'default_path' => '',                      // Default absolute path to bundled plugins.
-                    'menu'         => 'fc-power-plugins',      // Menu slug.
-					'parent_slug'  => 'fc-power',           // Parent menu slug.
-                    'capability'   => 'install_plugins',       // Capability needed to view plugin install page, should be a capability associated with the parent menu used.
-                    'has_notices'  => true,                    // Show admin notices or not.
-                    'dismissable'  => true,                    // If false, a user cannot dismiss the nag message.
-                    'dismiss_msg'  => '',                      // If 'dismissable' is false, this message will be output at top of nag.
-                    'is_automatic' => false,                   // Automatically activate plugins after installation or not.
-                    'message'      => '',                      // Message to output right before the plugins table.
-                    'strings'      => array(
-                            'page_title'   => 'Instalación de plugins por defecto',
-							'menu_title'   => 'Plugins',
-							'activated_successfully' => 'El plugin fue activado correctamente:',
-                            'notice_can_install_required'     => _n_noop(
-                                    'FCPower requires the following plugin: %1$s.',
-                                    'FCPower requires the following plugins: %1$s.',
-                                    'fc-power'
-                            ), // %1$s = plugin name(s).
-                            'notice_can_install_recommended'  => _n_noop(
-                                    'FCPower recommends the following plugin: %1$s.',
-                                    'FCPower recommends the following plugins: %1$s.',
-                                    'fc-power'
-                            ),
-                    )
-            );
-	
-            if(isset($plugins) && current_user_can( 'install_plugins' )){
-                tgmpa( $plugins, $config );
-            }
-        }
-
 	
 		/**
 		 * Input text
