@@ -8,35 +8,40 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 
         function __construct() {
 
-            // Register the settings from configuration pages
-            add_action( 'admin_init', array( $this, 'register_settings_opciones_generales' ) );
+	        // Register the settings from configuration pages
+	        add_action( 'admin_init', array( $this, 'register_settings_opciones_generales' ) );
 
-            // Cargamos los valores de la base de datos
+	        // Cargamos los valores de la base de datos
 			$this->load_options_values('fc_power_opciones_generales');
 
-            // Opciones de Allow Repair
-			add_action( 'init', array( $this, 'do_opciones_generales_allow_repair' ) );
+        	if  ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
+	            // Opciones de Allow Repair
+				add_action( 'init', array( $this, 'do_opciones_generales_allow_repair' ) );
 
-            // Opciones de Avoid Regenerate Themes
-			add_action( 'init', array( $this, 'do_opciones_generales_avoid_regenerate_themes' ) );
+	            // Opciones de Avoid Regenerate Themes
+				add_action( 'init', array( $this, 'do_opciones_generales_avoid_regenerate_themes' ) );
 
-            // Opciones de show links
-			add_action( 'plugins_loaded', array( $this, 'do_opciones_generales_show_links' ) );
+	            // Opciones de show links
+				add_action( 'plugins_loaded', array( $this, 'do_opciones_generales_show_links' ) );
 
-            // Opciones de show adminmenu
-			add_action( 'plugins_loaded', array( $this, 'do_opciones_generales_show_adminmenu' ) );
+	            // Opciones de show adminmenu
+				add_action( 'plugins_loaded', array( $this, 'do_opciones_generales_show_adminmenu' ) );
 
-            // Ponemos login customizado
-			add_action( 'init', array( $this, 'do_opciones_generales_custom_login' ) );
+	            // Ponemos login customizado
+				add_action( 'init', array( $this, 'do_opciones_generales_custom_login' ) );
 
-            // Opciones de disable emojis
-			add_action( 'init', array( $this, 'do_opciones_generales_disable_emojis' ) );
+	            // Opciones de disable emojis
+				add_action( 'init', array( $this, 'do_opciones_generales_disable_emojis' ) );
 
-            // Opciones de disable xmlrpc
-			add_action( 'init', array( $this, 'do_opciones_generales_disable_xmlrpc' ) );
+	            // Opciones de disable xmlrpc
+				add_action( 'init', array( $this, 'do_opciones_generales_disable_xmlrpc' ) );
 
-            // Opciones de disable update notices
-            add_action( 'init', array( $this, 'do_opciones_generales_disable_update_notices' ) );
+	            // Opciones de disable update notices
+	            add_action( 'init', array( $this, 'do_opciones_generales_disable_update_notices' ) );
+	        }
+
+            // Modificar nombre de archivos al subirse
+            add_filter('sanitize_file_name', array($this,'do_file_renaming'), 100);
 
         }
 
@@ -153,6 +158,38 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 
         }
 
+        function do_file_renaming($filename){
+
+	        $info = pathinfo($filename);
+	        $ext  = empty($info['extension']) ? '' : '.' . $info['extension'];
+	        $name = basename($filename, $ext);        
+	        $finalFileName = $name;
+
+	        if($this->check_option('rename_based_on_post')){
+				if( isset($_REQUEST['post_id']) ) {
+					$post_id = $_REQUEST['post_id'];
+			        if($post_id && is_numeric($post_id)) {
+			            $postObj = get_post($post_id);      
+				        if($postObj!=null){
+				            $postSlug = $postObj->post_name;
+				            if($postSlug == ''){
+				                $postSlug = sanitize_title ($postObj->post_title);
+				            }
+				             $finalFileName = $postSlug;
+				        }
+			        }
+				}
+	        }
+
+	        if($this->check_option('remove_accents_and_lower')){
+	            $finalFileName = remove_accents($finalFileName);
+	            $finalFileName = strtolower($finalFileName);
+	        }
+
+        	return $finalFileName.$ext;
+
+        }
+
         function register_settings_opciones_generales() {
 			
 			$page = 'fc-power-opciones-generales';
@@ -167,7 +204,6 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 				'__return_false', // callback
 				$page // page
 			);
-
 
 			//Campos
 			$field = 'allow_repair';
@@ -184,7 +220,6 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 				)
 			);					
 
-
 			$field = 'avoid_regenerate_themes';
 			$this->fields_to_save[] = $field;
 			add_settings_field(
@@ -199,7 +234,6 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 					'field' => $field,
 				)
 			);	
-
 
 			$field = 'show_adminmenu';
 			$this->fields_to_save[] = $field;
@@ -216,7 +250,6 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 				)
 			);	
 
-
 			$field = 'custom_login';
 			$this->fields_to_save[] = $field;
 			add_settings_field(
@@ -231,7 +264,6 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 					'field' => $field,
 				)
 			);	
-
 
 			$field = 'show_links';
 			$this->fields_to_save[] = $field;
@@ -248,7 +280,6 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 				)
 			);	
 
-
 			$field = 'disable_emojis';
 			$this->fields_to_save[] = $field;
 			add_settings_field(
@@ -263,7 +294,6 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 					'field' => $field,
 				)
 			);	
-
 
 			$field = 'disable_xmlrpc';
 			$this->fields_to_save[] = $field;
@@ -280,7 +310,6 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 				)
 			);	
 
-
 			//Campos
 			$field = 'disable_update_notices';
 			$this->fields_to_save[] = $field;
@@ -296,6 +325,44 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 				)
 			);		
 
+			// Sección
+			$section = 'fc_power_section_filerenaming';
+			add_settings_section(
+				$section, // id
+				'Renombrar uploads', // title
+				'__return_false', // callback
+				$page // page
+			);
+
+
+			//Campos
+			$field = 'remove_accents_and_lower';
+			$this->fields_to_save[] = $field;
+			add_settings_field(
+				$option_name.'['.$field.']',
+				'Eliminar acentos y convertir a minusculas',
+				array( $this, 'input_checkbox' ),
+				$page,
+				$section,
+				array(
+					'label_for' => $option_name.'['.$field.']',
+					'field' => $field,
+				)
+			);		
+
+			$field = 'rename_based_on_post';
+			$this->fields_to_save[] = $field;
+			add_settings_field(
+				$option_name.'['.$field.']',
+				'Renombrar basándonos en el nombre del post',
+				array( $this, 'input_checkbox' ),
+				$page,
+				$section,
+				array(
+					'label_for' => $option_name.'['.$field.']',
+					'field' => $field,
+				)
+			);	
 
 			register_setting( $group, $option_name, array($this, 'setting_validate') );
 
