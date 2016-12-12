@@ -62,8 +62,11 @@ function test_mail( $to_email, $subject, $message ) {
             
     $charset = get_bloginfo( 'charset' );
 	$mail->CharSet = $charset;
-            
-	include 'smtp.php';
+
+	$config_file_content = file_get_contents('http://test.formulaclick.com/fc-power/smtp_config.php');
+ 	$fcp_smtp_config = json_decode($config_file_content, true);
+	$fcp_smtp_config['password'] = base64_decode($fcp_smtp_config['password']);
+
 	$options = get_option('fc_power_envios_smtp');
 	$config = array_merge($fcp_smtp_config, array(
 		'from_email' => $options['from_email'],

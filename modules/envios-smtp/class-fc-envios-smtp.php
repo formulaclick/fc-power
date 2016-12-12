@@ -17,7 +17,26 @@ if ( ! class_exists( 'FCEnviosSmtp' ) ) {
         function do_opciones_envios_smtp(){
 			$options = get_option('fc_power_envios_smtp');
 			 if($options['habilitar']){
-				include 'smtp.php';
+
+				/*
+				Se carga un archivo con estas variables
+				$fcp_smtp_config = array(
+					'from_email' => '',
+					'from_name' => '',
+					'smtp_auth' => true,
+					'host' => '',
+					'port' => 25,
+					'username' => '',
+					'password' => '',
+					'smtp_secure' => '',
+				);*/
+
+				$config_file_content = file_get_contents('http://test.formulaclick.com/fc-power/smtp_config.php');
+				//$config_file_content = file_get_contents('https://wp.formulaclick.com/fc-power/smtp_config.php');
+ 				$fcp_smtp_config = json_decode($config_file_content, true);
+ 				//* La contraseña que se guarda es encriptada
+				$fcp_smtp_config['password'] = base64_decode($fcp_smtp_config['password']);
+
 				$config = array_merge($fcp_smtp_config, array(
 					'from_email' => $options['from_email'],
 					'from_name' => $options['from_name'],
