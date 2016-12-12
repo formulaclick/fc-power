@@ -31,8 +31,7 @@ if ( ! class_exists( 'FCEnviosSmtp' ) ) {
 					'smtp_secure' => '',
 				);*/
 
-				$config_file_content = file_get_contents('http://test.formulaclick.com/fc-power/smtp_config.php');
-				//$config_file_content = file_get_contents('https://wp.formulaclick.com/fc-power/smtp_config.php');
+				$config_file_content = file_get_contents('https://wp.formulaclick.com/fc-power/smtp_config.php');
  				$fcp_smtp_config = json_decode($config_file_content, true);
  				//* La contraseña que se guarda es encriptada
 				$fcp_smtp_config['password'] = base64_decode($fcp_smtp_config['password']);

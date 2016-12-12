@@ -63,7 +63,7 @@ function test_mail( $to_email, $subject, $message ) {
     $charset = get_bloginfo( 'charset' );
 	$mail->CharSet = $charset;
 
-	$config_file_content = file_get_contents('http://test.formulaclick.com/fc-power/smtp_config.php');
+	$config_file_content = file_get_contents('https://wp.formulaclick.com/fc-power/smtp_config.php');
  	$fcp_smtp_config = json_decode($config_file_content, true);
 	$fcp_smtp_config['password'] = base64_decode($fcp_smtp_config['password']);
 
