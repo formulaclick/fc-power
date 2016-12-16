@@ -170,12 +170,12 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 					$post_id = $_REQUEST['post_id'];
 			        if($post_id && is_numeric($post_id)) {
 			            $postObj = get_post($post_id);      
-				        if($postObj!=null){
+				        if( ($postObj != null) && ($postObj->post_status != 'auto-draft') ){
 				            $postSlug = $postObj->post_name;
-				            if($postSlug == ''){
+				            if( $postSlug == '' ){
 				                $postSlug = sanitize_title ($postObj->post_title);
 				            }
-				             $finalFileName = $postSlug;
+				            $finalFileName = $postSlug;
 				        }
 			        }
 				}
