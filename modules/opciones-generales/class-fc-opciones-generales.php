@@ -171,9 +171,9 @@ if ( ! class_exists( 'FCOpcionesGenerales' ) ) {
 			        if($post_id && is_numeric($post_id)) {
 			            $postObj = get_post($post_id);      
 				        if( ($postObj != null) && ($postObj->post_status != 'auto-draft') ){
-				            $postSlug = $postObj->post_name;
+				            $postSlug = $postObj->post_type . '-' . $postObj->post_name;
 				            if( $postSlug == '' ){
-				                $postSlug = sanitize_title ($postObj->post_title);
+				                $postSlug = $postObj->post_type . '-' . sanitize_title ($postObj->post_title);
 				            }
 				            $finalFileName = $postSlug;
 				        }
